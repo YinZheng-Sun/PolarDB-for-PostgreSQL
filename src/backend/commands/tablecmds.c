@@ -772,6 +772,9 @@ DefineRelation(CreateStmt *stmt, char relkind, Oid ownerId,
 
 		if (colDef->identity)
 			attr->attidentity = colDef->identity;
+
+		if (colDef->is_invisible)
+			attr->attisinvisible = colDef->is_invisible;
 	}
 
 	/*
@@ -5646,6 +5649,7 @@ ATExecAddColumn(List **wqueue, AlteredTableInfo *tab, Relation rel,
 	attribute.atthasmissing = false;
 	attribute.attidentity = colDef->identity;
 	attribute.attisdropped = false;
+	attribute.attisinvisible = colDef->is_invisible;
 	attribute.attislocal = colDef->is_local;
 	attribute.attinhcount = colDef->inhcount;
 	attribute.attcollation = collOid;

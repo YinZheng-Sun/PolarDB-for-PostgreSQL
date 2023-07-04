@@ -8229,6 +8229,7 @@ getTableAttrs(Archive *fout, TableInfo *tblinfo, int numTables)
 	int			i_atthasdef;
 	int			i_attidentity;
 	int			i_attisdropped;
+	int 		i_attisinvisible;
 	int			i_attlen;
 	int			i_attalign;
 	int			i_attislocal;
@@ -8425,6 +8426,7 @@ getTableAttrs(Archive *fout, TableInfo *tblinfo, int numTables)
 		i_atthasdef = PQfnumber(res, "atthasdef");
 		i_attidentity = PQfnumber(res, "attidentity");
 		i_attisdropped = PQfnumber(res, "attisdropped");
+		i_attisinvisible = PQfnumber(res, "attisinvisible");
 		i_attlen = PQfnumber(res, "attlen");
 		i_attalign = PQfnumber(res, "attalign");
 		i_attislocal = PQfnumber(res, "attislocal");
@@ -8442,6 +8444,7 @@ getTableAttrs(Archive *fout, TableInfo *tblinfo, int numTables)
 		tbinfo->typstorage = (char *) pg_malloc(ntups * sizeof(char));
 		tbinfo->attidentity = (char *) pg_malloc(ntups * sizeof(char));
 		tbinfo->attisdropped = (bool *) pg_malloc(ntups * sizeof(bool));
+		tbinfo->attisinvisible = (bool *) pg_malloc(ntups * sizeof(bool));
 		tbinfo->attlen = (int *) pg_malloc(ntups * sizeof(int));
 		tbinfo->attalign = (char *) pg_malloc(ntups * sizeof(char));
 		tbinfo->attislocal = (bool *) pg_malloc(ntups * sizeof(bool));
@@ -8469,6 +8472,7 @@ getTableAttrs(Archive *fout, TableInfo *tblinfo, int numTables)
 			tbinfo->attidentity[j] = (i_attidentity >= 0 ? *(PQgetvalue(res, j, i_attidentity)) : '\0');
 			tbinfo->needs_override = tbinfo->needs_override || (tbinfo->attidentity[j] == ATTRIBUTE_IDENTITY_ALWAYS);
 			tbinfo->attisdropped[j] = (PQgetvalue(res, j, i_attisdropped)[0] == 't');
+			tbinfo->attisinvisible[j] = (PQgetvalue(res, j, i_attisinvisible)[0] == 't');
 			tbinfo->attlen[j] = atoi(PQgetvalue(res, j, i_attlen));
 			tbinfo->attalign[j] = *(PQgetvalue(res, j, i_attalign));
 			tbinfo->attislocal[j] = (PQgetvalue(res, j, i_attislocal)[0] == 't');
@@ -11014,6 +11018,7 @@ dumpCompositeType(Archive *fout, TypeInfo *tyinfo)
 	int			i_attlen;
 	int			i_attalign;
 	int			i_attisdropped;
+	int         i_attisinvisible;
 	int			i_attcollation;
 	int			i;
 	int			actual_atts;
@@ -11066,6 +11071,7 @@ dumpCompositeType(Archive *fout, TypeInfo *tyinfo)
 	i_attlen = PQfnumber(res, "attlen");
 	i_attalign = PQfnumber(res, "attalign");
 	i_attisdropped = PQfnumber(res, "attisdropped");
+	i_attisinvisible = PQfnumber(res, "attisinvisible");
 	i_attcollation = PQfnumber(res, "attcollation");
 
 	if (dopt->binary_upgrade)

@@ -813,7 +813,6 @@ transformInsertStmt(ParseState *pstate, InsertStmt *stmt)
 	else
 	{
 		/*
-		 * Process INSERT ... VALUES with a single VALUES sublist.  We treat
 		 * this case separately for efficiency.  The sublist is just computed
 		 * directly as the Query's targetlist, with no VALUES RTE.  So it
 		 * works just like a SELECT without any FROM.

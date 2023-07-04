@@ -654,7 +654,7 @@ static bool polar_is_ignore_user_defined_tablespace(char *tablespace_name);
 	IDENTITY_P IF_P ILIKE IMMEDIATE IMMUTABLE IMPLICIT_P IMPORT_P IN_P INCLUDE
 	INCLUDING INCREMENT INDEX INDEXES INHERIT INHERITS INITIALLY INLINE_P
 	INNER_P INOUT INPUT_P INSENSITIVE INSERT INSTEAD INT_P INTEGER
-	INTERSECT INTERVAL INTO INVOKER IS ISNULL ISOLATION
+	INTERSECT INTERVAL INTO INVISIBLE INVOKER IS ISNULL ISOLATION
 
 	JOIN
 
@@ -3422,6 +3422,7 @@ columnDef:	ColId Typename create_generic_options ColQualList
 					n->colname = $1;
 					n->typeName = $2;
 					n->inhcount = 0;
+					n->is_invisible = false;
 					n->is_local = true;
 					n->is_not_null = false;
 					n->is_from_type = false;
@@ -3443,6 +3444,7 @@ columnOptions:	ColId ColQualList
 					n->colname = $1;
 					n->typeName = NULL;
 					n->inhcount = 0;
+					n->is_invisible = false;
 					n->is_local = true;
 					n->is_not_null = false;
 					n->is_from_type = false;
@@ -3461,6 +3463,7 @@ columnOptions:	ColId ColQualList
 					n->colname = $1;
 					n->typeName = NULL;
 					n->inhcount = 0;
+					n->is_invisible = false;
 					n->is_local = true;
 					n->is_not_null = false;
 					n->is_from_type = false;
@@ -3600,6 +3603,13 @@ ColConstraintElem:
 					n->fk_del_action	= (char) ($5 & 0xFF);
 					n->skip_validation  = false;
 					n->initially_valid  = true;
+					$$ = (Node *)n;
+				}
+			| INVISIBLE
+				{
+					Constraint *n = makeNode(Constraint);
+					n->contype = CONSTR_INVISIBLE;
+					n->location = @1;
 					$$ = (Node *)n;
 				}
 		;
@@ -12617,6 +12627,7 @@ TableFuncElement:	ColId Typename opt_collate_clause
 					n->colname = $1;
 					n->typeName = $2;
 					n->inhcount = 0;
+					n->is_invisible = false;
 					n->is_local = true;
 					n->is_not_null = false;
 					n->is_from_type = false;
@@ -12763,6 +12774,8 @@ xmltable_column_option_el:
 				{ $$ = makeDefElem("is_not_null", (Node *) makeInteger(true), @1); }
 			| NULL_P
 				{ $$ = makeDefElem("is_not_null", (Node *) makeInteger(false), @1); }
+			| INVISIBLE
+				{ $$ = makeDefElem("invisible", (Node *) makeInteger(true), @1); }
 		;
 
 xml_namespace_list:
@@ -15796,6 +15809,7 @@ reserved_keyword:
 			| INITIALLY
 			| INTERSECT
 			| INTO
+			| INVISIBLE
 			| LATERAL_P
 			| LEADING
 			| LIMIT
