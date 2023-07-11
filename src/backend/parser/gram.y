@@ -700,7 +700,7 @@ static bool polar_is_ignore_user_defined_tablespace(char *tablespace_name);
 	UNTIL UPDATE USER USING
 
 	VACUUM VALID VALIDATE VALIDATOR VALUE_P VALUES VARCHAR VARIADIC VARYING
-	VERBOSE VERSION_P VIEW VIEWS VOLATILE
+	VERBOSE VERSION_P VIEW VIEWS VISIBLE VOLATILE
 
 	WEIGHT WHEN WHERE WHITESPACE_P WINDOW WITH WITHIN WITHOUT WORK WRAPPER WRITE
 
@@ -2176,6 +2176,22 @@ alter_table_cmd:
 					n->subtype = AT_SetOptions;
 					n->name = $3;
 					n->def = (Node *) $5;
+					$$ = (Node *)n;
+				}
+			/* ALTER TABLE <name> ALTER [COLUMN] <colname> SET INVISIBLE */
+			| ALTER opt_column ColId SET INVISIBLE
+				{
+					AlterTableCmd *n = makeNode(AlterTableCmd);
+					n->subtype = AT_SetInvisible;
+					n->name = $3;
+					$$ = (Node *)n;
+				}
+			/* ALTER TABLE <name> ALTER [COLUMN] <colname> SET VISIBLE */
+			| ALTER opt_column ColId SET VISIBLE
+				{
+					AlterTableCmd *n = makeNode(AlterTableCmd);
+					n->subtype = AT_SetVisible;
+					n->name = $3;
 					$$ = (Node *)n;
 				}
 			/* ALTER TABLE <name> ALTER [COLUMN] <colname> RESET ( column_parameter = value [, ... ] ) */
@@ -15840,6 +15856,7 @@ reserved_keyword:
 			| USER
 			| USING
 			| VARIADIC
+			| VISIBLE
 			| WHEN
 			| WHERE
 			| WINDOW
