@@ -12790,8 +12790,6 @@ xmltable_column_option_el:
 				{ $$ = makeDefElem("is_not_null", (Node *) makeInteger(true), @1); }
 			| NULL_P
 				{ $$ = makeDefElem("is_not_null", (Node *) makeInteger(false), @1); }
-			| INVISIBLE
-				{ $$ = makeDefElem("invisible", (Node *) makeInteger(true), @1); }
 		;
 
 xml_namespace_list:

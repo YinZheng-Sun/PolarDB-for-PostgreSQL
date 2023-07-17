@@ -8271,7 +8271,7 @@ getTableAttrs(Archive *fout, TableInfo *tblinfo, int numTables)
 			/* atthasmissing and attmissingval are new in 11 */
 			appendPQExpBuffer(q, "SELECT a.attnum, a.attname, a.atttypmod, "
 							  "a.attstattarget, a.attstorage, t.typstorage, "
-							  "a.attnotnull, a.atthasdef, a.attisdropped, "
+							  "a.attnotnull, a.atthasdef, a.attisdropped, a.attisinvisible, "
 							  "a.attlen, a.attalign, a.attislocal, "
 							  "pg_catalog.format_type(t.oid,a.atttypmod) AS atttypname, "
 							  "array_to_string(a.attoptions, ', ') AS attoptions, "
@@ -8300,7 +8300,7 @@ getTableAttrs(Archive *fout, TableInfo *tblinfo, int numTables)
 			 */
 			appendPQExpBuffer(q, "SELECT a.attnum, a.attname, a.atttypmod, "
 							  "a.attstattarget, a.attstorage, t.typstorage, "
-							  "a.attnotnull, a.atthasdef, a.attisdropped, "
+							  "a.attnotnull, a.atthasdef, a.attisdropped, a.attisinvisible, "
 							  "a.attlen, a.attalign, a.attislocal, "
 							  "pg_catalog.format_type(t.oid,a.atttypmod) AS atttypname, "
 							  "array_to_string(a.attoptions, ', ') AS attoptions, "
@@ -8328,7 +8328,7 @@ getTableAttrs(Archive *fout, TableInfo *tblinfo, int numTables)
 			 */
 			appendPQExpBuffer(q, "SELECT a.attnum, a.attname, a.atttypmod, "
 							  "a.attstattarget, a.attstorage, t.typstorage, "
-							  "a.attnotnull, a.atthasdef, a.attisdropped, "
+							  "a.attnotnull, a.atthasdef, a.attisdropped, a.attisinvisible, "
 							  "a.attlen, a.attalign, a.attislocal, "
 							  "pg_catalog.format_type(t.oid,a.atttypmod) AS atttypname, "
 							  "array_to_string(a.attoptions, ', ') AS attoptions, "
@@ -8358,7 +8358,7 @@ getTableAttrs(Archive *fout, TableInfo *tblinfo, int numTables)
 			 */
 			appendPQExpBuffer(q, "SELECT a.attnum, a.attname, a.atttypmod, "
 							  "a.attstattarget, a.attstorage, t.typstorage, "
-							  "a.attnotnull, a.atthasdef, a.attisdropped, "
+							  "a.attnotnull, a.atthasdef, a.attisdropped, a.attisinvisible, "
 							  "a.attlen, a.attalign, a.attislocal, "
 							  "pg_catalog.format_type(t.oid,a.atttypmod) AS atttypname, "
 							  "array_to_string(a.attoptions, ', ') AS attoptions, "
@@ -8378,7 +8378,7 @@ getTableAttrs(Archive *fout, TableInfo *tblinfo, int numTables)
 			/* attoptions is new in 9.0 */
 			appendPQExpBuffer(q, "SELECT a.attnum, a.attname, a.atttypmod, "
 							  "a.attstattarget, a.attstorage, t.typstorage, "
-							  "a.attnotnull, a.atthasdef, a.attisdropped, "
+							  "a.attnotnull, a.atthasdef, a.attisdropped, a.attisinvisible, "
 							  "a.attlen, a.attalign, a.attislocal, "
 							  "pg_catalog.format_type(t.oid,a.atttypmod) AS atttypname, "
 							  "array_to_string(a.attoptions, ', ') AS attoptions, "
@@ -8397,7 +8397,7 @@ getTableAttrs(Archive *fout, TableInfo *tblinfo, int numTables)
 			/* need left join here to not fail on dropped columns ... */
 			appendPQExpBuffer(q, "SELECT a.attnum, a.attname, a.atttypmod, "
 							  "a.attstattarget, a.attstorage, t.typstorage, "
-							  "a.attnotnull, a.atthasdef, a.attisdropped, "
+							  "a.attnotnull, a.atthasdef, a.attisdropped, a.attisinvisible, "
 							  "a.attlen, a.attalign, a.attislocal, "
 							  "pg_catalog.format_type(t.oid,a.atttypmod) AS atttypname, "
 							  "'' AS attoptions, 0 AS attcollation, "
@@ -15688,6 +15688,7 @@ dumpTableSchema(Archive *fout, TableInfo *tbinfo)
 				{
 					bool		print_default;
 					bool		print_notnull;
+					bool		print_invisible;
 
 					/*
 					 * Default value --- suppress if to be printed separately.
@@ -15703,6 +15704,8 @@ dumpTableSchema(Archive *fout, TableInfo *tbinfo)
 					print_notnull = (tbinfo->notnull[j] &&
 									 (!tbinfo->inhNotNull[j] ||
 									  tbinfo->ispartition || dopt->binary_upgrade));
+
+					print_invisible = tbinfo->attisinvisible[j];
 
 					/*
 					 * Skip column if fully defined by reloftype, except in
@@ -15764,6 +15767,9 @@ dumpTableSchema(Archive *fout, TableInfo *tbinfo)
 
 					if (print_notnull)
 						appendPQExpBufferStr(q, " NOT NULL");
+					
+					if (print_invisible)
+						appendPQExpBufferStr(q, " INVISIBLE");
 				}
 			}
 
